@@ -1,6 +1,7 @@
 package com.example.connectfour;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -10,6 +11,7 @@ import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 
 import java.util.Stack;
 
@@ -148,8 +150,33 @@ public class ConnectFourUI extends Application {
 
     public void resetGame() {
         game.resetGame(); // reset hashmap
-        startNewGame(); // display fresh UI
+        resetBoardUI();
     }
+
+    private void resetBoardUI() {
+        Platform.runLater(() -> {
+            for (int row = 0; row < ROWS; row++) {
+                for (int col = 0; col < COLUMNS; col++) {
+                    StackPane stackPane = (StackPane) getNodeFromGridPane(gridPane, col, row);
+                    if (stackPane != null) {
+                        Circle circle = (Circle) stackPane.getChildren().get(0);
+                        circle.setFill(EMPTY_SLOT);
+                    }
+                }
+            }
+        });
+    }
+
+    private Node getNodeFromGridPane(GridPane gridPane, int col, int row) {
+        for (Node node : gridPane.getChildren()) {
+            if (GridPane.getColumnIndex(node) != null && GridPane.getColumnIndex(node) == col &&
+                    GridPane.getRowIndex(node) != null && GridPane.getRowIndex(node) == row) {
+                return node;
+            }
+        }
+        return null;
+    }
+
 
     public static void main(String[] args) {
         launch(args);
