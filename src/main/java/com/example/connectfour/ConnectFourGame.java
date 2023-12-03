@@ -44,6 +44,90 @@ public class ConnectFourGame implements Serializable {
         return true;
     }
 
+    // WINNING GAME LOGIC -->
+    // Check if the last move made by the player resulted in a win
+    public boolean checkForWin(int lastColumnPlayed, int player) {
+        // Check vertically, horizontally, and both diagonal directions
+        return checkVertical(lastColumnPlayed, player) ||
+                checkHorizontal(player) ||
+                checkDiagonal(player);
+    }
+
+    private boolean checkVertical(int column, int player) {
+        Stack<Integer> stack = game.get(column);
+
+        if (stack.size() < 4) { // if there's not enough chips to win
+            return false;
+        }
+
+        // Check the top 4 chips in the current column
+        int count = 0;
+        for (int i = stack.size() - 1; i >= 0 && i >= stack.size() - 4; i--)
+        {
+            if (stack.get(i) == player) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        return count >= 4;
+    }
+
+    private boolean checkHorizontal(int player) {
+
+        for (int row = 0; row < ROWS; row++)
+        {
+            int count = 0;
+
+            for (int col = 0; col < COLUMNS; col++)
+            {
+                count = (getPlayerAt(col, row) == player) ? (count + 1) : 0;
+                if (count >= 4) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean checkDiagonal(int player) {
+        // Check for both left diagonal and right diagonal
+        return checkDiagonalDirection(player, 1) || checkDiagonalDirection(player, -1);
+    }
+
+    private boolean checkDiagonalDirection(int player, int direction) {
+        for (int col = 0; col < COLUMNS; col++) {
+            for (int row = 0; row < ROWS; row++) {
+                int count = 0;
+                for (int i = 0; i < 4; i++) {
+                    int currentRow = row + i;
+                    int currentCol = col + (i * direction);
+                    if (currentRow < 0 || currentRow >= ROWS || currentCol < 0 || currentCol >= COLUMNS) {
+                        break;
+                    }
+                    if (getPlayerAt(currentCol, currentRow) == player) {
+                        count++;
+                    } else {
+                        break;
+                    }
+                }
+                if (count >= 4) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private int getPlayerAt(int col, int row) {
+        Stack<Integer> stack = game.get(col);
+        if (row < stack.size()) {
+            return stack.get(row);
+        }
+        return -1; // Indicates no player
+    }
+
+
     public void resetGame() {
         for (int col = 0; col < COLUMNS; col++) {
 

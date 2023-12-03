@@ -106,20 +106,25 @@ public class ConnectFourUI extends Application {
     private static final Color PLAYER_TWO_COLOR = Color.rgb(255, 223, 0);
     private int currentPlayer = 1;
 
-    // Chip placement along with player turns
-    private void playerTurns(int column, Circle circle)
-    {
-        boolean success = game.placeChip(column, currentPlayer); // check if we can place a chip in that column
-
+    // Chip placement with player turns and winning game logic
+    private void playerTurns(int column, Circle circle) {
+        boolean success = game.placeChip(column, currentPlayer);
         if (success) {
             updateUI();
-            // if currentPlayer == 1, then stay 1. else, go to player 2
-            currentPlayer = (currentPlayer == 1) ? 2 : 1; // Switch to the other player
-        }
-        else {
+
+            // Check for a win after placing the chip
+            if (game.checkForWin(column, currentPlayer)) {
+                showAlert("Game Over", "Player " + currentPlayer + " wins!");
+                // Optionally reset the game or handle the end game scenario
+            }
+
+            // Switch to the other player
+            currentPlayer = (currentPlayer == 1) ? 2 : 1;
+        } else {
             showAlert("Column Full", "You cannot place a chip here as the column is full. Please try again.");
         }
     }
+
 
     // Update the game whenever a chip is placed
     private void updateUI() {
