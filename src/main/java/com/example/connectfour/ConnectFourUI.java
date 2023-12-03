@@ -75,7 +75,7 @@ public class ConnectFourUI extends Application {
                 stackPane.setStyle("-fx-background-color: transparent;");
 
                 final int column = col;
-                stackPane.setOnMouseClicked(event -> playerTurns(column, circle));
+                stackPane.setOnMouseClicked(event -> playerTurns(column));
 
                 grid.add(stackPane, col, row);
             }
@@ -106,25 +106,32 @@ public class ConnectFourUI extends Application {
     private static final Color PLAYER_TWO_COLOR = Color.rgb(255, 223, 0);
     private int currentPlayer = 1;
 
-    // Chip placement with player turns and winning game logic
-    private void playerTurns(int column, Circle circle) {
+    // Chip placement with player turns, winning game logic, and AI interlinked with UI
+    private void playerTurns(int column) {
+        // Human player's turn
         boolean success = game.placeChip(column, currentPlayer);
         if (success) {
             updateUI();
-
-            // Check for a win after placing the chip
             if (game.checkForWin(column, currentPlayer)) {
                 showAlert("Game Over", "Player " + currentPlayer + " wins!");
-                // Optionally reset the game or handle the end game scenario
+                return;
             }
+            currentPlayer = 2; // Switch to AI player
 
-            // Switch to the other player
-            currentPlayer = (currentPlayer == 1) ? 2 : 1;
+            // AI's turn
+            int aiMove = game.makeAIMove(2, 1);
+            game.placeChip(aiMove, currentPlayer);
+            updateUI();
+
+            if (game.checkForWin(aiMove, currentPlayer)) {
+                showAlert("Game Over", "AI wins!");
+                return;
+            }
+            currentPlayer = 1; // Switch back to human player
         } else {
             showAlert("Column Full", "You cannot place a chip here as the column is full. Please try again.");
         }
     }
-
 
     // Update the game whenever a chip is placed
     private void updateUI() {
@@ -142,6 +149,7 @@ public class ConnectFourUI extends Application {
         }
     }
 
+    // Create alert tab that opens when a player wins, validation error, save/load, etc.
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);
@@ -193,15 +201,20 @@ public class ConnectFourUI extends Application {
 
     public void resetGame() {
         game.resetGame(); // reset hashmap
-        resetBoardUI();
+        resetBoardUI(); // then reset UI itself
     }
 
     private void resetBoardUI() {
         Platform.runLater(() -> {
+
             for (int row = 0; row < ROWS; row++) {
-                for (int col = 0; col < COLUMNS; col++) {
+                for (int col = 0; col < COLUMNS; col++)
+                {
                     StackPane stackPane = (StackPane) getNodeFromGridPane(gridPane, col, row);
-                    if (stackPane != null) {
+
+                    // if chip is there, empty it
+                    if (stackPane != null)
+                    {
                         Circle circle = (Circle) stackPane.getChildren().get(0);
                         circle.setFill(EMPTY_SLOT);
                     }
@@ -210,6 +223,7 @@ public class ConnectFourUI extends Application {
         });
     }
 
+    // check if there is a chip in column by looping through the grid pane (UI)
     private Node getNodeFromGridPane(GridPane gridPane, int col, int row) {
         for (Node node : gridPane.getChildren()) {
             if (GridPane.getColumnIndex(node) != null && GridPane.getColumnIndex(node) == col &&

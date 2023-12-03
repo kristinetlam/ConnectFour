@@ -127,6 +127,52 @@ public class ConnectFourGame implements Serializable {
         return -1; // Indicates no player
     }
 
+    // AI LOGIC IMPLEMENTATIONS
+    public int makeAIMove(int aiPlayer, int humanPlayer) {
+        // Check for a winning move for the AI
+        for (int col = 0; col < COLUMNS; col++) {
+            if (canWinNextMove(col, aiPlayer)) {
+                return col;
+            }
+        }
+
+        // Check for a blocking move
+        for (int col = 0; col < COLUMNS; col++) {
+            if (canWinNextMove(col, humanPlayer)) {
+                return col;
+            }
+        }
+
+        // Otherwise, make a strategic move
+        return makeStrategicMove(aiPlayer);
+    }
+
+    private boolean canWinNextMove(int column, int player) {
+        // Simulate placing a chip in the column and check for a win
+        Stack<Integer> stack = game.get(column);
+
+        if (stack.size() >= ROWS) {
+            return false;
+        }
+
+        stack.push(player);
+        boolean canWin = checkForWin(column, player);
+        stack.pop();
+
+        return canWin;
+    }
+
+    private int makeStrategicMove(int player) {
+        // Implement your strategy here. For example, start from the center and expand outwards.
+        int[] preferredColumns = {3, 2, 4, 1, 5, 0, 6};
+        for (int col : preferredColumns) {
+            if (game.get(col).size() < ROWS) {
+                return col;
+            }
+        }
+        return 0; // Default fallback, should not normally reach here
+    }
+
 
     public void resetGame() {
         for (int col = 0; col < COLUMNS; col++) {
@@ -142,20 +188,19 @@ public class ConnectFourGame implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public void saveGame(String filename) throws IOException {
-        String userHomeFolder = System.getProperty("user.home");
-        String desktopPath = userHomeFolder + File.separator + "Desktop";
-
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         String timestamp = now.format(formatter);
         String filePath = filename + "_" + timestamp + ".dat";
 
+        // save this.game to load the hashmap later by writing the obj
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
             out.writeObject(this.game);
         }
     }
 
     public void loadGame(String filePath) throws IOException, ClassNotFoundException {
+        // load in the game obj from file
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
             this.game = (HashMap<Integer, Stack<Integer>>) in.readObject();
         }
