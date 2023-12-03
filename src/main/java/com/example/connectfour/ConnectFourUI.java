@@ -12,7 +12,12 @@ import javafx.stage.Stage;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.stage.FileChooser;
 
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Stack;
 
 public class ConnectFourUI extends Application {
@@ -141,12 +146,45 @@ public class ConnectFourUI extends Application {
     }
 
     private void saveGame() {
-        // Implement save functionality
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Game");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Connect Four Saves", "*.dat"));
+        fileChooser.setInitialFileName("connectfour_savegame_" + getCurrentTimestamp() + ".dat"); // Suggested file name
+
+        File file = fileChooser.showSaveDialog(mainStage);
+        if (file != null) {
+            try {
+                game.saveGame(file.getAbsolutePath());
+                showAlert("Game Saved", "Your game has been saved successfully.");
+            } catch (IOException ex) {
+                showAlert("Save Error", "Error saving the game: " + ex.getMessage());
+            }
+        }
+    }
+
+    private String getCurrentTimestamp() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        return now.format(formatter);
     }
 
     private void loadGame() {
-        // Implement load functionality
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Load Game");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Connect Four Saves", "*.dat"));
+
+        File file = fileChooser.showOpenDialog(mainStage);
+        if (file != null) {
+            try {
+                game.loadGame(file.getAbsolutePath());
+                updateUI();
+                showAlert("Game Loaded", "Your game has been loaded successfully.");
+            } catch (IOException | ClassNotFoundException ex) {
+                showAlert("Load Error", "Error loading the game: " + ex.getMessage());
+            }
+        }
     }
+
 
     public void resetGame() {
         game.resetGame(); // reset hashmap

@@ -2,10 +2,14 @@
 
 package com.example.connectfour;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.Stack;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.io.File;
 
-public class ConnectFourGame {
+public class ConnectFourGame implements Serializable {
 
     private static final int COLUMNS = 7;
     private static final int ROWS = 6;
@@ -48,6 +52,28 @@ public class ConnectFourGame {
                 continue;
             }
             stack.clear();
+        }
+    }
+
+    private static final long serialVersionUID = 1L;
+
+    public void saveGame(String filename) throws IOException {
+        String userHomeFolder = System.getProperty("user.home");
+        String desktopPath = userHomeFolder + File.separator + "Desktop";
+
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String timestamp = now.format(formatter);
+        String filePath = filename + "_" + timestamp + ".dat";
+
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
+            out.writeObject(this.game);
+        }
+    }
+
+    public void loadGame(String filePath) throws IOException, ClassNotFoundException {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
+            this.game = (HashMap<Integer, Stack<Integer>>) in.readObject();
         }
     }
 
