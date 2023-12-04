@@ -231,7 +231,7 @@ public class ConnectFourUI extends Application {
     }
 
     public void resetGame() {
-        game.resetGame(); // reset hashmap
+        game.resetGame(); // reset hashmap and move log
         resetBoardUI(); // then reset UI itself
         game.setGameWon(false);
     }

@@ -223,6 +223,8 @@ public class ConnectFourGame implements Serializable {
 
 
     public void resetGame() {
+        move_log.clear();
+
         for (int col = 0; col < COLUMNS; col++) {
 
             Stack<Integer> stack = game.get(col);
