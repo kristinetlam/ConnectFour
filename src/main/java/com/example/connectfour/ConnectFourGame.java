@@ -3,9 +3,7 @@
 package com.example.connectfour;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.Stack;
+import java.util.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -14,11 +12,30 @@ public class ConnectFourGame implements Serializable {
     private static final int COLUMNS = 7;
     private static final int ROWS = 6;
 
+    public static class Move implements Serializable {
+        private final int player;
+        private final int column;
+
+        public Move(int player, int column) {
+            this.player = player;
+            this.column = column;
+        }
+
+        public int getPlayer() {
+            return player;
+        }
+
+        public int getColumn() {
+            return column;
+        }
+    }
+
     /* Implement hashmap data structure: HashMap<key,value>
         The keys are the column indices and the values are stacks
         Each key will point to a value which is a stack that holds the chips in that specific column
      */
     private HashMap<Integer, Stack<Integer>> game;
+    private List<Move> move_log = new ArrayList<>();
 
     // Create C4 grid!
     public ConnectFourGame() {
@@ -59,6 +76,7 @@ public class ConnectFourGame implements Serializable {
         }
 
         stack.push(player);
+        move_log.add(new Move(player, column));
         return true;
     }
 
@@ -226,6 +244,7 @@ public class ConnectFourGame implements Serializable {
         // save this.game to load the hashmap later by writing the obj
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
             out.writeObject(this.game);
+            out.writeObject(this.move_log);
         }
     }
 
@@ -233,6 +252,7 @@ public class ConnectFourGame implements Serializable {
         // load in the game obj from file
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
             this.game = (HashMap<Integer, Stack<Integer>>) in.readObject();
+            this.move_log = (List<Move>) in.readObject();
         }
     }
 

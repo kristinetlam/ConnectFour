@@ -266,7 +266,6 @@ public class ConnectFourUI extends Application {
         return null;
     }
 
-
     public static void main(String[] args) {
         launch(args);
     }
