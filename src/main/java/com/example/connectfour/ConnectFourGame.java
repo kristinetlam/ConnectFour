@@ -8,7 +8,6 @@ import java.util.Random;
 import java.util.Stack;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.io.File;
 
 public class ConnectFourGame implements Serializable {
 
@@ -121,7 +120,7 @@ public class ConnectFourGame implements Serializable {
                 for (int i = 0; i < 4; i++) {
                     int currentRow = row + i;
                     int currentCol = col + (i * direction);
-                    if (currentRow < 0 || currentRow >= ROWS || currentCol < 0 || currentCol >= COLUMNS) {
+                    if (currentRow >= ROWS || currentCol < 0 || currentCol >= COLUMNS) {
                         break;
                     }
                     if (getPlayerAt(currentCol, currentRow) == player) {
@@ -182,7 +181,7 @@ public class ConnectFourGame implements Serializable {
     }
 
     private int makeStrategicMove(int player) {
-        // Implement your strategy here. For example, start from the center and expand outwards.
+
         int[] preferredColumns = {3, 2, 4, 1, 5, 0, 6};
         for (int col : preferredColumns) {
             if (game.get(col).size() < ROWS) {
