@@ -129,6 +129,11 @@ public class ConnectFourUI extends Application {
 
     // Chip placement with player turns, winning game logic, and AI interlinked with UI
     private void playerTurns(int column) {
+
+        if (game.isGameWon()) {
+            showAlert("Game Over", "The game has already been won. Please start a new game or reset.");
+            return;
+        }
         // Human player's turn
         boolean success = game.placeChip(column, currentPlayer);
         if (success) {
@@ -228,6 +233,7 @@ public class ConnectFourUI extends Application {
     public void resetGame() {
         game.resetGame(); // reset hashmap
         resetBoardUI(); // then reset UI itself
+        game.setGameWon(false);
     }
 
     private void resetBoardUI() {

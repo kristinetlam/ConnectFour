@@ -63,12 +63,25 @@ public class ConnectFourGame implements Serializable {
     }
 
     // WINNING GAME LOGIC -->
+
+    private boolean gameWon = false;
+
+    public boolean isGameWon() {
+        return gameWon;
+    }
+
+    public void setGameWon(boolean gameWon) {
+        this.gameWon = gameWon;
+    }
+
+
     // Check if the last move made by the player resulted in a win
     public boolean checkForWin(int lastColumnPlayed, int player) {
         // Check vertically, horizontally, and both diagonal directions
-        return checkVertical(lastColumnPlayed, player) ||
-                checkHorizontal(player) ||
+        gameWon = checkVertical(lastColumnPlayed, player) || checkHorizontal(player) ||
                 checkDiagonal(player);
+
+        return gameWon;
     }
 
     private boolean checkVertical(int column, int player) {
@@ -93,8 +106,7 @@ public class ConnectFourGame implements Serializable {
 
     private boolean checkHorizontal(int player) {
 
-        for (int row = 0; row < ROWS; row++)
-        {
+        for (int row = 0; row < ROWS; row++) {
             int count = 0;
 
             for (int col = 0; col < COLUMNS; col++)
