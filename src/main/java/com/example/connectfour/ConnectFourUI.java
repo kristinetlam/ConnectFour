@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -18,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.Stack;
 
 public class ConnectFourUI extends Application {
@@ -38,8 +40,27 @@ public class ConnectFourUI extends Application {
         startNewGame();
     }
 
+    private void showAIDifficultyMenu() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Choose AI Difficulty");
+        alert.setHeaderText("Select the difficulty level of the AI");
+
+        ButtonType buttonEasy = new ButtonType("Easy");
+        ButtonType buttonHard = new ButtonType("Hard");
+
+        alert.getButtonTypes().setAll(buttonEasy, buttonHard);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == buttonEasy) {
+            game.setAIDifficulty("easy");
+        } else {
+            game.setAIDifficulty("hard");
+        }
+    }
+
     public void startNewGame() {
         game = new ConnectFourGame();
+        showAIDifficultyMenu();
         currentPlayer = 1;
 
         gridPane = createGridPane();
@@ -112,14 +133,20 @@ public class ConnectFourUI extends Application {
         boolean success = game.placeChip(column, currentPlayer);
         if (success) {
             updateUI();
+
             if (game.checkForWin(column, currentPlayer)) {
                 showAlert("Game Over", "Player " + currentPlayer + " wins!");
                 return;
             }
             currentPlayer = 2; // Switch to AI player
 
+            int aiMove = 0;
+            if (game.getAIDifficulty().equals("easy")) {
+                aiMove = game.makeRandomMove();
+            } else {
+                aiMove = game.makeAIMove(2, 1);
+            }
             // AI's turn
-            int aiMove = game.makeAIMove(2, 1);
             game.placeChip(aiMove, currentPlayer);
             updateUI();
 
@@ -197,7 +224,6 @@ public class ConnectFourUI extends Application {
             }
         }
     }
-
 
     public void resetGame() {
         game.resetGame(); // reset hashmap

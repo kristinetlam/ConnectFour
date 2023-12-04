@@ -4,6 +4,7 @@ package com.example.connectfour;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Stack;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,6 +31,24 @@ public class ConnectFourGame implements Serializable {
 
     public HashMap<Integer, Stack<Integer>> getGame() {
         return game;
+    }
+    private String aiDifficulty;
+
+    public void setAIDifficulty(String difficulty) {
+        this.aiDifficulty = difficulty;
+    }
+
+    public String getAIDifficulty() {
+        return this.aiDifficulty;
+    }
+
+    public int makeRandomMove() {
+        Random rand = new Random();
+        int column;
+        do {
+            column = rand.nextInt(COLUMNS);
+        } while (game.get(column).size() >= ROWS);
+        return column;
     }
 
     // Place a chip into the stack, where the chip sinks to the bottom
