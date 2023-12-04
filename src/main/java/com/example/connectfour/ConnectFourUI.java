@@ -193,8 +193,8 @@ public class ConnectFourUI extends Application {
     private void saveGame() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Game");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Connect Four Saves", "*.dat"));
-        fileChooser.setInitialFileName("connectfour_savegame_" + getCurrentTimestamp() + ".dat"); // Suggested file name
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Connect Four Saves", "*.txt"));
+        fileChooser.setInitialFileName("C4Save_" + getCurrentTimestamp() + ".txt"); // Suggested file name
 
         File file = fileChooser.showSaveDialog(mainStage);
         if (file != null) {
@@ -216,7 +216,7 @@ public class ConnectFourUI extends Application {
     private void loadGame() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Load Game");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Connect Four Saves", "*.dat"));
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Connect Four Saves", "*.txt"));
 
         File file = fileChooser.showOpenDialog(mainStage);
         if (file != null) {

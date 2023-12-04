@@ -239,21 +239,37 @@ public class ConnectFourGame implements Serializable {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         String timestamp = now.format(formatter);
-        String filePath = filename + "_" + timestamp + ".dat";
+        String filePath = filename + "_" + timestamp + ".txt";
 
         // save this.game to load the hashmap later by writing the obj
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filePath))) {
-            out.writeObject(this.game);
-            out.writeObject(this.move_log);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            for (Move move : this.move_log) {
+                writer.write("Player " + move.getPlayer() + ", Column " + move.getColumn());
+                writer.newLine();
+            }
         }
     }
 
     public void loadGame(String filePath) throws IOException, ClassNotFoundException {
-        // load in the game obj from file
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filePath))) {
-            this.game = (HashMap<Integer, Stack<Integer>>) in.readObject();
-            this.move_log = (List<Move>) in.readObject();
+            resetGame();
+
+            // Open the text file
+            try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Parse the line to extract player and column
+                    String[] parts = line.split(", ");
+                    if (parts.length == 2) {
+                        String playerPart = parts[0]; // "Player X"
+                        String columnPart = parts[1]; // "Column Y"
+
+                        int player = Integer.parseInt(playerPart.replace("Player ", ""));
+                        int column = Integer.parseInt(columnPart.replace("Column ", ""));
+
+                        // Place the chip as per the move (this should also update move_log)
+                        placeChip(column, player);
+                    }
+                }
+            }
         }
     }
-
-}
