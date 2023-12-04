@@ -134,7 +134,7 @@ public class ConnectFourUI extends Application {
             showAlert("Game Over", "The game has already been won. Please start a new game or reset.");
             return;
         }
-        // Human player's turn
+        // Human player's turn!
         boolean success = game.placeChip(column, currentPlayer);
         if (success) {
             updateUI();

@@ -20,7 +20,7 @@ public class ConnectFourGame implements Serializable {
      */
     private HashMap<Integer, Stack<Integer>> game;
 
-    // Create C4 grid
+    // Create C4 grid!
     public ConnectFourGame() {
         game = new HashMap<>();
         for (int col = 0; col < COLUMNS; col++) {
