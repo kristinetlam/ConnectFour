@@ -6,11 +6,13 @@ import java.io.*;
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 public class ConnectFourGame implements Serializable {
 
     private static final int COLUMNS = 7;
     private static final int ROWS = 6;
+    private static final long serialVersionUID = 1L;
 
     public static class Move implements Serializable {
         private final int player;
@@ -37,7 +39,7 @@ public class ConnectFourGame implements Serializable {
     private HashMap<Integer, Stack<Integer>> game;
     private List<Move> move_log = new ArrayList<>();
 
-    // Create C4 grid!
+    // Create C4 grid
     public ConnectFourGame() {
         game = new HashMap<>();
         for (int col = 0; col < COLUMNS; col++) {
@@ -48,8 +50,8 @@ public class ConnectFourGame implements Serializable {
     public HashMap<Integer, Stack<Integer>> getGame() {
         return game;
     }
-    private String aiDifficulty;
 
+    private String aiDifficulty;
     public void setAIDifficulty(String difficulty) {
         this.aiDifficulty = difficulty;
     }
@@ -61,9 +63,11 @@ public class ConnectFourGame implements Serializable {
     public int makeRandomMove() {
         Random rand = new Random();
         int column;
+
         do {
             column = rand.nextInt(COLUMNS);
         } while (game.get(column).size() >= ROWS);
+
         return column;
     }
 
@@ -92,10 +96,18 @@ public class ConnectFourGame implements Serializable {
         this.gameWon = gameWon;
     }
 
+    public boolean isBoardFull() {
+        for (Map.Entry<Integer, Stack<Integer>> entry : game.entrySet()) {
+            if (entry.getValue().size() < ROWS) {
+                return false; // If any column is not full, return false
+            }
+        }
+        return true; // All columns are full
+    }
 
     // Check if the last move made by the player resulted in a win
     public boolean checkForWin(int lastColumnPlayed, int player) {
-        // Check vertically, horizontally, and both diagonal directions
+        // check all directions
         gameWon = checkVertical(lastColumnPlayed, player) || checkHorizontal(player) ||
                 checkDiagonal(player);
 
@@ -109,7 +121,7 @@ public class ConnectFourGame implements Serializable {
             return false;
         }
 
-        // Check the top 4 chips in the current column
+        // Check the top 4 chips in the current column, since it'll never be in the middle or bottom of a stack
         int count = 0;
         for (int i = stack.size() - 1; i >= 0 && i >= stack.size() - 4; i--)
         {
@@ -144,16 +156,21 @@ public class ConnectFourGame implements Serializable {
     }
 
     private boolean checkDiagonalDirection(int player, int direction) {
+
         for (int col = 0; col < COLUMNS; col++) {
             for (int row = 0; row < ROWS; row++) {
+
                 int count = 0;
+
                 for (int i = 0; i < 4; i++) {
                     int currentRow = row + i;
                     int currentCol = col + (i * direction);
+
+                    // if out of range, break
                     if (currentRow >= ROWS || currentCol < 0 || currentCol >= COLUMNS) {
                         break;
                     }
-                    if (getPlayerAt(currentCol, currentRow) == player) {
+                    if (getPlayerAt(currentCol, currentRow) == player) { // if exact chip is player's chip
                         count++;
                     } else {
                         break;
@@ -169,10 +186,11 @@ public class ConnectFourGame implements Serializable {
 
     private int getPlayerAt(int col, int row) {
         Stack<Integer> stack = game.get(col);
+
         if (row < stack.size()) {
-            return stack.get(row);
+            return stack.get(row); // returns exact chip
         }
-        return -1; // Indicates no player
+        return -1; // indicates no player
     }
 
     // AI LOGIC IMPLEMENTATIONS
@@ -196,29 +214,29 @@ public class ConnectFourGame implements Serializable {
     }
 
     private boolean canWinNextMove(int column, int player) {
-        // Simulate placing a chip in the column and check for a win
+        // simulate placing a chip in the column and check for a win
         Stack<Integer> stack = game.get(column);
 
-        if (stack.size() >= ROWS) {
+        if (stack.size() >= ROWS) { // if full
             return false;
         }
 
         stack.push(player);
         boolean canWin = checkForWin(column, player);
-        stack.pop();
+        stack.pop(); // pop to ensure simulation
 
         return canWin;
     }
 
     private int makeStrategicMove(int player) {
 
-        int[] preferredColumns = {3, 2, 4, 1, 5, 0, 6};
+        int[] preferredColumns = {3, 2, 4, 1, 5, 0, 6}; // highest to lowest winning chance columns
         for (int col : preferredColumns) {
             if (game.get(col).size() < ROWS) {
                 return col;
             }
         }
-        return 0; // Default fallback, should not normally reach here
+        return 0;
     }
 
 
@@ -235,15 +253,13 @@ public class ConnectFourGame implements Serializable {
         }
     }
 
-    private static final long serialVersionUID = 1L;
-
     public void saveGame(String filename) throws IOException {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         String timestamp = now.format(formatter);
         String filePath = filename + "_" + timestamp + ".txt";
 
-        // save this.game to load the hashmap later by writing the obj
+        // for every move in move_log, write to the txt file
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (Move move : this.move_log) {
                 writer.write("Player " + move.getPlayer() + ", Column " + move.getColumn());
@@ -255,11 +271,12 @@ public class ConnectFourGame implements Serializable {
     public void loadGame(String filePath) throws IOException, ClassNotFoundException {
             resetGame();
 
-            // Open the text file
+            // open txt file and parse the lines to load the game
             try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
                 String line;
+
                 while ((line = reader.readLine()) != null) {
-                    // Parse the line to extract player and column
+                    // split into player and column using ", "
                     String[] parts = line.split(", ");
                     if (parts.length == 2) {
                         String playerPart = parts[0]; // "Player X"
@@ -268,7 +285,6 @@ public class ConnectFourGame implements Serializable {
                         int player = Integer.parseInt(playerPart.replace("Player ", ""));
                         int column = Integer.parseInt(columnPart.replace("Column ", ""));
 
-                        // Place the chip as per the move (this should also update move_log)
                         placeChip(column, player);
                     }
                 }

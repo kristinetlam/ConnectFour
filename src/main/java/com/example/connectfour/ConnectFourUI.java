@@ -127,6 +127,8 @@ public class ConnectFourUI extends Application {
     private static final Color PLAYER_TWO_COLOR = Color.rgb(255, 223, 0);
     private int currentPlayer = 1;
 
+    private volatile boolean playerMoved = false;
+
     // Chip placement with player turns, winning game logic, and AI interlinked with UI
     private void playerTurns(int column) {
 
@@ -134,7 +136,15 @@ public class ConnectFourUI extends Application {
             showAlert("Game Over", "The game has already been won. Please start a new game or reset.");
             return;
         }
-        // Human player's turn!
+
+        // Check for draw condition after each turn
+        if (game.isBoardFull() && !game.isGameWon()) {
+            showAlert("Game Over", "The game is a draw!");
+            return;
+        }
+
+
+        // Human player's turn
         boolean success = game.placeChip(column, currentPlayer);
         if (success) {
             updateUI();
@@ -143,26 +153,40 @@ public class ConnectFourUI extends Application {
                 showAlert("Game Over", "Player " + currentPlayer + " wins!");
                 return;
             }
+            playerMoved = true;
             currentPlayer = 2; // Switch to AI player
 
-            int aiMove = 0;
-            if (game.getAIDifficulty().equals("easy")) {
-                aiMove = game.makeRandomMove();
-            } else {
-                aiMove = game.makeAIMove(2, 1);
-            }
-            // AI's turn
-            game.placeChip(aiMove, currentPlayer);
-            updateUI();
+            new Thread(() -> {
+                try {
+                    Thread.sleep(50);
+                    if (playerMoved) {
+                        Platform.runLater(() -> {
+                            int aiMove = 0;
+                            if (game.getAIDifficulty().equals("easy")) {
+                                aiMove = game.makeRandomMove();
+                            } else {
+                                aiMove = game.makeAIMove(2, 1);
+                            }
+                            // AI's turn
+                            game.placeChip(aiMove, currentPlayer);
+                            updateUI();
 
-            if (game.checkForWin(aiMove, currentPlayer)) {
-                showAlert("Game Over", "AI wins!");
-                return;
-            }
-            currentPlayer = 1; // Switch back to human player
+                            if (game.checkForWin(aiMove, currentPlayer)) {
+                                showAlert("Game Over", "AI wins!");
+                                return;
+                            }
+                            currentPlayer = 1; // Switch back to human player
+                            playerMoved = false;
+                        });
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }).start();
         } else {
             showAlert("Column Full", "You cannot place a chip here as the column is full. Please try again.");
         }
+
     }
 
     // Update the game whenever a chip is placed
@@ -214,6 +238,7 @@ public class ConnectFourUI extends Application {
     }
 
     private void loadGame() {
+        game.resetGame();
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Load Game");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Connect Four Saves", "*.txt"));
